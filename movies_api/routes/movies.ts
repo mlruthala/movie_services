@@ -85,6 +85,17 @@ export const getPaginatedMovies = (db: Database, req: Request, res: Response) =>
   });
 };
 
+export const fetcFromIMDB = async (imdbId: number | string) => {
+  const url = `https://api.example.com/movies/${imdbId}`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
+};
 
 export const getMovieDetailsWithRatings = (db: Database, req: Request, res: Response) => {
  
@@ -112,13 +123,16 @@ export const getMovieDetailsWithRatings = (db: Database, req: Request, res: Resp
         ...row,
         budget: formatter.format(row.budget), 
       }));
+     // fetcFromIMDB()
       res.json({
 
         movies: formattedRows, 
       });
     });
-
+    
 };
+
+
 
 
 export const getMoviesByYear = (db: Database, req: Request, res: Response) => {
@@ -136,7 +150,7 @@ export const getMoviesByYear = (db: Database, req: Request, res: Response) => {
     FROM movies
     WHERE strftime('%Y', releaseDate) = ?
   `);
-  stmt.all(year,pageSize,offset, (err:any, result: any[]) => {;
+  stmt.all([year],pageSize,offset, (err:any, result: any[]) => {;
   
     if (err) {
       return res.status(500).json({ error: 'Failed to count movies.' });
@@ -174,7 +188,7 @@ export const getMoviesByGenre = (db: Database, req: Request, res: Response) => {
     FROM movies m,   json_each(m.genres)
     WHERE json_each.value ->> 'name' = ?
   `);
-  stmt.all(genre,pageSize,offset, (err:any, result: any[]) => {;
+  stmt.all([genre],pageSize,offset, (err:any, result: any[]) => {;
   
     if (err) {
       return res.status(500).json({ error: 'Failed to count movies.' });
